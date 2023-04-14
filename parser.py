@@ -7,27 +7,16 @@ import os
 import io
 #import time
 
-KEY_LEFTSHIFT = 0xe1
-KEY_SHIFT = KEY_LEFTSHIFT
+KEY_SHIFT = 0xe1
 
-CMD_DOWN = 1
-CMD_UP = 2
-CMD_PRESS = 3
-CMD_DELAY = 4
-CMD_SWITCH_LANG = 5
-CMD_CALL = 6
-CMD_WAITBTN = 7
-
-class ParserException(Exception):
-    pass
-
-def merge_commands(c1, c2):
-    if (c1 is None):
-        c1 = []
-    if (c2 is None):
-        c2 = []
-    c1.extend(c2)
-    return c1
+class Commands:
+    Down = 1
+    Up = 2
+    Press = 3
+    Delay = 4
+    SwitchLang = 5
+    Call = 6
+    WaitBtn = 7
 
 name2key = {'CTRL': 224, 'SHIFT': 225, 'ALT': 226, 'WIN': 227, 'RCTRL': 228, 'RSHIFT': 229, 'RALT': 230, 'RWIN': 231, 'CAPSLOCK': 57, 'CAPS': 57, 'TAB': 43, 'ESC': 41, 'SPACE': 44, 'ENTER': 40, 'BACKSPACE': 42, 'BKSP': 42, 'INSERT': 73, 'INS': 73, 'DELETE': 76, 'DEL': 76, 'HOME': 74, 'END': 77, 'PAGEDOWN': 78, 'PGDN': 78, 'PAGEUP': 75, 'PGUP': 75, 'RIGHT': 79, 'LEFT': 80, 'DOWN': 81, 'UP': 82, 'F1': 58, 'F2': 59, 'F3': 60, 'F4': 61, 'F5': 62, 'F6': 63, 'F7': 64, 'F8': 65, 'F9': 66, 'F10': 67, 'F11': 68, 'F12': 69, 'SYSRQ': 70, 'PRTSCN': 70, 'SCROLLLOCK': 71, 'SCLK': 71, 'SCRLK': 71, 'BREAK': 72, 'PAUSE': 72, 'NUMLOCK': 83, 'KPSLASH': 84, 'KPASTERISK': 85, 'KPMINUS': 86, 'KPPLUS': 87, 'KPENTER': 88, 'KP1': 89, 'KP2': 90, 'KP3': 91, 'KP4': 92, 'KP5': 93, 'KP6': 94, 'KP7': 95, 'KP8': 96, 'KP9': 97, 'KP0': 98, 'KPDOT': 99, 'COMPOSE': 101, 'CMENU': 101}
 cyr_langs = []
@@ -41,27 +30,42 @@ SHIFT_BIT = 512
 LANG_MASK = 1024 | 2048 | 4096
 
 
+class ParserException(Exception):
+    pass
+
+
+def merge_commands(c1, c2):
+    if (c1 is None):
+        c1 = []
+    if (c2 is None):
+        c2 = []
+    c1.extend(c2)
+    return c1
+
+
 def ascii2key(c: str):
     x = ord(c)
     if x in ascii_range:
         return ascii_keys[x - ascii_range.start]
     return 0
 
+
 def cyr2key(c: str):
     x = ord(c)
     if x in cyr_range:
-        return cyr_data[x - cyr_range.start] #& KEY_BITS
+        return cyr_data[x - cyr_range.start]
     return 0
 
 
 def press_key_cmd(r: list, k: int):
     k = k & KEY_MASK
     if k & SHIFT_BIT:
-        r.append([CMD_DOWN, KEY_SHIFT])
-        r.append([CMD_PRESS, k & ~SHIFT_BIT])
-        r.append([CMD_UP, KEY_SHIFT])
+        r.append([Commands.Down, KEY_SHIFT])
+        r.append([Commands.Press, k & ~SHIFT_BIT])
+        r.append([Commands.Up, KEY_SHIFT])
     else:
-        r.append([CMD_PRESS, k])
+        r.append([Commands.Press, k])
+
 
 def detect_cyr_lang(keys: list):
     
@@ -80,6 +84,7 @@ def detect_cyr_lang(keys: list):
 def c2k(c: str):
     k = ascii2key(c)
     return k if k != 0 else cyr2key(c)
+
 
 def parse_typing(s: str):
     r = []
@@ -102,13 +107,13 @@ def parse_typing(s: str):
         if l:
             lon = 'en-' + l
             loff = l + '-en'
-            prev_is_same_lang = (len(r) > 0) and (r[-1][0] == CMD_SWITCH_LANG) and (r[-1][1] == loff)
+            prev_is_same_lang = (len(r) > 0) and (r[-1][0] == Commands.SwitchLang) and (r[-1][1] == loff)
             if prev_is_same_lang:
                 r.pop() #remove switch to eng
             else:
-                r.append([CMD_SWITCH_LANG, lon])
+                r.append([Commands.SwitchLang, lon])
             press_key_cmd(r, k)
-            r.append([CMD_SWITCH_LANG, loff])
+            r.append([Commands.SwitchLang, loff])
             continue
         raise ParserException(f"Unsupported char in position {cind}, char code is {hex(ord(s[cind]))}")
     
@@ -117,14 +122,15 @@ def parse_typing(s: str):
     prev_is_shift_up = False
     tmp = []
     for cmd in r:
-        if (cmd[0] == CMD_DOWN) and (cmd[1] == KEY_SHIFT) and prev_is_shift_up:
+        if (cmd[0] == Commands.Down) and (cmd[1] == KEY_SHIFT) and prev_is_shift_up:
             tmp.pop()
             continue
         tmp.append(cmd)
-        prev_is_shift_up = (cmd[0] == CMD_UP) and (cmd[1] == KEY_SHIFT)
+        prev_is_shift_up = (cmd[0] == Commands.Up) and (cmd[1] == KEY_SHIFT)
     r = tmp
     #print('r', r)
     return r
+
 
 def parse_key(keyname: str):
     if len(keyname) == 1:
@@ -139,14 +145,12 @@ def parse_key(keyname: str):
     try:
         return name2key[keyname.upper()]
     except KeyError:
-        raise ParserException(f"Unknown key '{keyname}'")
-    
+        raise ParserException(f"Unknown key '{keyname}'")    
         
 
 def parse_shortcuts(s: str):
     r = []
     s = s.replace(' +', '+').replace('+ ', '+').replace(' >', '>').replace('> ', '>')
-    
     for part in s.split():
         i = part.find('>')
         seq = []
@@ -154,30 +158,31 @@ def parse_shortcuts(s: str):
             seq = list(map(parse_key, part[i+1:].split('>')))
             part = part[0:i]
         keys = list(map(parse_key, part.split('+')))
-        
         for k in keys:
-            r.append([CMD_DOWN, k])
+            r.append([Commands.Down, k])
         for k in seq:
-            r.append([CMD_PRESS, k])
+            r.append([Commands.Press, k])
         for k in list(reversed(keys)):
-            r.append([CMD_UP, k])
+            r.append([Commands.Up, k])
     return r
+
 
 def filename2key(s: str):
     if s.endswith('.macro'):
         s = s[0:len(s)-6]
     return int(s) if s.isdigit() else s
 
+
 def parse_cmd(s: str):
     
     def p_delay(args: list):
-        return [[CMD_DELAY, int(args[0])]]
+        return [[Commands.Delay, int(args[0])]]
     
     def p_call(args: list):
-        return [[CMD_CALL, filename2key(args[0].lower())]]
+        return [[Commands.Call, filename2key(args[0].lower())]]
     
     def p_waitbtn(args: list):
-        return [[CMD_WAITBTN, int(args[0])]]
+        return [[Commands.WaitBtn, int(args[0])]]
     
     def p_press_release(cmd, args: list):
         r = []
@@ -193,8 +198,8 @@ def parse_cmd(s: str):
     cmds = {'delay': [1, p_delay], 
             'call': [1, p_call], 
             'wait-btn': [1, p_waitbtn], 
-            'press': [-1, lambda x: p_press_release(CMD_DOWN, x)],
-            'release': [-1, lambda x: p_press_release(CMD_UP, x)],
+            'press': [-1, lambda x: p_press_release(Commands.Down, x)],
+            'release': [-1, lambda x: p_press_release(Commands.Up, x)],
             }
     if cmd in cmds:
         cargs = cmds[cmd][0]
@@ -208,7 +213,6 @@ def parse_cmd(s: str):
         except ValueError as e:
             raise ParserException(str(e))
     raise ParserException(f"Unknown command '{cmd}'")
-
 
 
 def parse_macro_file(filename: str):

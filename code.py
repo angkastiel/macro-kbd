@@ -50,13 +50,7 @@ btn_dbg = setup_input_btn(board.GP15)
 keyboard = Keyboard(usb_hid.devices)
 
 from parser import parse_macro_dir
-from parser import CMD_DOWN
-from parser import CMD_UP
-from parser import CMD_PRESS
-from parser import CMD_DELAY
-from parser import CMD_SWITCH_LANG
-from parser import CMD_CALL
-from parser import CMD_WAITBTN
+from parser import Commands
 
 trigger_button = None
 
@@ -86,7 +80,7 @@ def exec_call(cmd: list):
         run_macro(macros[cmd[1]])
     
 def run_macro(commands: list):
-    cmds = {CMD_DOWN: exec_down, CMD_UP: exec_up, CMD_PRESS: exec_press, CMD_DELAY: exec_delay, CMD_CALL: exec_call, CMD_SWITCH_LANG: exec_call, CMD_WAITBTN: exec_wait_btn}
+    cmds = {Commands.Down: exec_down, Commands.Up: exec_up, Commands.Press: exec_press, Commands.Delay: exec_delay, Commands.Call: exec_call, Commands.SwitchLang: exec_call, Commands.WaitBtn: exec_wait_btn}
     for cmd in commands:
         cmds[cmd[0]](cmd)
                         
@@ -133,13 +127,11 @@ def fade(while_f, timeout):
         y = 100 - x
         if x:
             led.value = True
-            time.sleep(x * (0.0001))
+            time.sleep(x * 0.0001)
         if y:
             led.value = False
-            time.sleep(y * (0.0001))
+            time.sleep(y * 0.0001)
 
-def is_dbg_pressed():
-    return btn_dbg.value
 
 while True:
     led.value = bool(btn_dbg.value)
