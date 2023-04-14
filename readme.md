@@ -7,6 +7,7 @@ Macros for a button should be saved to .macro file in 'macro' folder. For links 
 ## Macro file syntax
 
 Each of line in macro file has structure *'&lt;macro-type&gt;:&lt;macro-data&gt;'*. Line starts with '#' is comment.
+
 *Examples:*
 
 		#next line type AbcD
