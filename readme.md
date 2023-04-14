@@ -83,3 +83,76 @@ Each of line in macro file has structure *'&lt;macro-type&gt;:&lt;macro-data&gt;
     		cmd:release A
     		cmd:release [
     		cmd:release 0xe1
+			
+### Supported key names
+
+| Key Name | Key Scan Code | Description |
+| -------- | ------------- | ----------- |
+| CTRL | 0xe0 | |
+| SHIFT | 0xe1 | |
+| ALT | 0xe2 | |
+| WIN | 0xe3 | |
+| RCTRL | 0xe4 | |
+| RSHIFT | 0xe5 | |
+| RALT | 0xe6 | |
+| RWIN | 0xe7 | |
+| CAPSLOCK | 0x39 | |
+| CAPS | 0x39 | |
+| TAB | 0x2b | |
+| ESC | 0x29 | |
+| SPACE | 0x2c | |
+| ENTER | 0x28 | |
+| BACKSPACE | 0x2a | |
+| BKSP | 0x2a | |
+| INSERT | 0x49 | |
+| INS | 0x49 | |
+| DELETE | 0x4c | |
+| DEL | 0x4c | |
+| HOME | 0x4a | |
+| END | 0x4d | |
+| PAGEDOWN | 0x4e | |
+| PGDN | 0x4e | |
+| PAGEUP | 0x4b | |
+| PGUP | 0x4b | |
+| RIGHT | 0x4f | |
+| LEFT | 0x50 | |
+| DOWN | 0x51 | |
+| UP | 0x52 | |
+| F1 | 0x3a | |
+| F2 | 0x3b | |
+| F3 | 0x3c | |
+| F4 | 0x3d | |
+| F5 | 0x3e | |
+| F6 | 0x3f | |
+| F7 | 0x40 | |
+| F8 | 0x41 | |
+| F9 | 0x42 | |
+| F10 | 0x43 | |
+| F11 | 0x44 | |
+| F12 | 0x45 | |
+| SYSRQ | 0x46 | |
+| PRTSCN | 0x46 | |
+| SCROLLLOCK | 0x47 | |
+| SKLK | 0x47 | |
+| SCRLK | 0x47 | |
+| BREAK | 0x48 | |
+| PAUSE | 0x48 | |
+| NUMLOCK | 0x53 | |
+| KPSLASH | 0x54 | |
+| KPASTERISK | 0x55 | |
+| KPMINUS | 0x56 | |
+| KPPLUS | 0x57 | |
+| KPENTER | 0x58 | |
+| KP1 | 0x59 | |
+| KP2 | 0x5a | |
+| KP3 | 0x5b | |
+| KP4 | 0x5c | |
+| KP5 | 0x5d | |
+| KP6 | 0x5e | |
+| KP7 | 0x5f | |
+| KP8 | 0x60 | |
+| KP9 | 0x61 | |
+| KP0 | 0x62 | |
+| KPDOT | 0x63 | |
+| COMPOSE | 0x65 | |
+| CMENU | 0x65 | |
