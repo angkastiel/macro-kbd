@@ -226,6 +226,8 @@ def parse_macro_file(filename: str):
         try:
             if (line is None) or (line.strip() is None) or (line.strip() == ''):
                 continue
+            if line.startswith('#'):
+                continue
             p = line.find(':')
             if (p <= 0):
                 raise ParserException("Unknown line format. Correct format: '<macro-type>:<macro>'")  

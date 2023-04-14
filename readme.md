@@ -6,10 +6,16 @@ Macros for a button should be saved to .macro file in 'macro' folder. For links 
 
 ## Macro file syntax
 
-Each of line in macro file has structure *'&lt;macro-type&gt;:&lt;macro-data&gt;'*. For example *'shortcut:CTR+ALT+DEL'*.
+Each of line in macro file has structure *'&lt;macro-type&gt;:&lt;macro-data&gt;'*. Line starts with '#' is comment.
+*Examples:*
+
+		#next line type AbcD
+		str:AbcD
+		#next line press CTR+ALT+DEL
+		shortcut:CTR+ALT+DEL
 
 ### Macro types
------------
+
 * **str** - used for typing. Automatically press SHIFT for uppercase letters or special characters. Space char (' ') is significant.
 
 *Examples:*
