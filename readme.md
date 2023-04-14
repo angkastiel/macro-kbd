@@ -91,33 +91,33 @@ Each of line in macro file has structure *'&lt;macro-type&gt;:&lt;macro-data&gt;
 | CTRL | 0xe0 | |
 | SHIFT | 0xe1 | |
 | ALT | 0xe2 | |
-| WIN | 0xe3 | |
-| RCTRL | 0xe4 | |
-| RSHIFT | 0xe5 | |
-| RALT | 0xe6 | |
-| RWIN | 0xe7 | |
+| WIN | 0xe3 | Windows key |
+| RCTRL | 0xe4 | Right CTRL |
+| RSHIFT | 0xe5 | Right SHIFT |
+| RALT | 0xe6 | Right Alt |
+| RWIN | 0xe7 | Right Windows|
 | CAPSLOCK | 0x39 | |
-| CAPS | 0x39 | |
+| CAPS | 0x39 | Equal to CAPSLOCK |
 | TAB | 0x2b | |
 | ESC | 0x29 | |
 | SPACE | 0x2c | |
 | ENTER | 0x28 | |
 | BACKSPACE | 0x2a | |
-| BKSP | 0x2a | |
+| BKSP | 0x2a | Equal to BACKSPACE |
 | INSERT | 0x49 | |
-| INS | 0x49 | |
+| INS | 0x49 | Equal to INSERT |
 | DELETE | 0x4c | |
-| DEL | 0x4c | |
+| DEL | 0x4c | Equal to DELETE |
 | HOME | 0x4a | |
 | END | 0x4d | |
 | PAGEDOWN | 0x4e | |
-| PGDN | 0x4e | |
+| PGDN | 0x4e | Equal to PAGEDOWN |
 | PAGEUP | 0x4b | |
-| PGUP | 0x4b | |
-| RIGHT | 0x4f | |
-| LEFT | 0x50 | |
-| DOWN | 0x51 | |
-| UP | 0x52 | |
+| PGUP | 0x4b | Equal to PAGEUP |
+| RIGHT | 0x4f | Right arrow |
+| LEFT | 0x50 | Left arrow |
+| DOWN | 0x51 | Down arrow |
+| UP | 0x52 | Up arrow |
 | F1 | 0x3a | |
 | F2 | 0x3b | |
 | F3 | 0x3c | |
@@ -130,29 +130,29 @@ Each of line in macro file has structure *'&lt;macro-type&gt;:&lt;macro-data&gt;
 | F10 | 0x43 | |
 | F11 | 0x44 | |
 | F12 | 0x45 | |
-| SYSRQ | 0x46 | |
-| PRTSCN | 0x46 | |
+| SYSRQ | 0x46 | SysRq/Print Screen key |
+| PRTSCN | 0x46 | SysRq/Print Screen key |
 | SCROLLLOCK | 0x47 | |
-| SKLK | 0x47 | |
-| SCRLK | 0x47 | |
-| BREAK | 0x48 | |
-| PAUSE | 0x48 | |
+| SCLK | 0x47 | Equal to SCROLLLOCK |
+| SCRLK | 0x47 | Equal to SCROLLLOCK |
+| BREAK | 0x48 | Pause/Break key |
+| PAUSE | 0x48 | Pause/Break key |
 | NUMLOCK | 0x53 | |
-| KPSLASH | 0x54 | |
-| KPASTERISK | 0x55 | |
-| KPMINUS | 0x56 | |
-| KPPLUS | 0x57 | |
-| KPENTER | 0x58 | |
-| KP1 | 0x59 | |
-| KP2 | 0x5a | |
-| KP3 | 0x5b | |
-| KP4 | 0x5c | |
-| KP5 | 0x5d | |
-| KP6 | 0x5e | |
-| KP7 | 0x5f | |
-| KP8 | 0x60 | |
-| KP9 | 0x61 | |
-| KP0 | 0x62 | |
-| KPDOT | 0x63 | |
-| COMPOSE | 0x65 | |
-| CMENU | 0x65 | |
+| KPSLASH | 0x54 | Numpad / |
+| KPASTERISK | 0x55 | Numpad * |
+| KPMINUS | 0x56 | Numpad - |
+| KPPLUS | 0x57 | Numpad + |
+| KPENTER | 0x58 | Numpad ENTER |
+| KP1 | 0x59 | Numpad 1 |
+| KP2 | 0x5a | Numpad 2 |
+| KP3 | 0x5b | Numpad 3 |
+| KP4 | 0x5c | Numpad 4 |
+| KP5 | 0x5d | Numpad 5 |
+| KP6 | 0x5e | Numpad 6 |
+| KP7 | 0x5f | Numpad 7 |
+| KP8 | 0x60 | Numpad 8 |
+| KP9 | 0x61 | Numpad 9 |
+| KP0 | 0x62 | Numpad 0 |
+| KPDOT | 0x63 | Numpad . |
+| COMPOSE | 0x65 | Context menu key |
+| CMENU | 0x65 | Context menu key |
