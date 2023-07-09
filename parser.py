@@ -17,6 +17,11 @@ class Commands:
     SwitchLang = 5
     Call = 6
     WaitBtn = 7
+    WaitBreak = 8
+    Repeat = 9
+    MouseDown = 10
+    MouseUp = 11
+    MouseClick = 12
 
 name2key = {'CTRL': 224, 'SHIFT': 225, 'ALT': 226, 'WIN': 227, 'RCTRL': 228, 'RSHIFT': 229, 'RALT': 230, 'RWIN': 231, 'CAPSLOCK': 57, 'CAPS': 57, 'TAB': 43, 'ESC': 41, 'SPACE': 44, 'ENTER': 40, 'BACKSPACE': 42, 'BKSP': 42, 'INSERT': 73, 'INS': 73, 'DELETE': 76, 'DEL': 76, 'HOME': 74, 'END': 77, 'PAGEDOWN': 78, 'PGDN': 78, 'PAGEUP': 75, 'PGUP': 75, 'RIGHT': 79, 'LEFT': 80, 'DOWN': 81, 'UP': 82, 'F1': 58, 'F2': 59, 'F3': 60, 'F4': 61, 'F5': 62, 'F6': 63, 'F7': 64, 'F8': 65, 'F9': 66, 'F10': 67, 'F11': 68, 'F12': 69, 'SYSRQ': 70, 'PRTSCN': 70, 'SCROLLLOCK': 71, 'SCLK': 71, 'SCRLK': 71, 'BREAK': 72, 'PAUSE': 72, 'NUMLOCK': 83, 'KPSLASH': 84, 'KPASTERISK': 85, 'KPMINUS': 86, 'KPPLUS': 87, 'KPENTER': 88, 'KP1': 89, 'KP2': 90, 'KP3': 91, 'KP4': 92, 'KP5': 93, 'KP6': 94, 'KP7': 95, 'KP8': 96, 'KP9': 97, 'KP0': 98, 'KPDOT': 99, 'COMPOSE': 101, 'CMENU': 101}
 cyr_langs = []
@@ -28,6 +33,10 @@ LANG_BITS = {'ua': 1024, 'by': 2048, 'ru': 4096}
 KEY_MASK = 0xff | 512
 SHIFT_BIT = 512
 LANG_MASK = 1024 | 2048 | 4096
+
+MBTN_LEFT = 1
+MBTN_RIGHT = 2
+MBTN_MIDDLE = 4
 
 
 class ParserException(Exception):
@@ -167,6 +176,13 @@ def parse_shortcuts(s: str):
     return r
 
 
+def parse_mouse_btn(s: str):
+    c = {'left': MBTN_LEFT, 
+         'right': MBTN_RIGHT, 
+         'middle': MBTN_MIDDLE, }
+    return c[s.lower()]
+
+
 def filename2key(s: str):
     if s.endswith('.macro'):
         s = s[0:len(s)-6]
@@ -178,11 +194,17 @@ def parse_cmd(s: str):
     def p_delay(args: list):
         return [[Commands.Delay, int(args[0])]]
     
+    def p_wait_br(args: list):
+        return [[Commands.WaitBreak, int(args[0])]]
+    
     def p_call(args: list):
         return [[Commands.Call, filename2key(args[0].lower())]]
     
     def p_waitbtn(args: list):
         return [[Commands.WaitBtn, int(args[0])]]
+    
+    def p_repeat(args: list):
+        return [[Commands.Repeat, filename2key(args[0].lower())]]
     
     def p_press_release(cmd, args: list):
         r = []
@@ -190,16 +212,30 @@ def parse_cmd(s: str):
             r.append([cmd, k])
         return r
     
+    def p_mouse_click(args: list):
+        return [[Commands.MouseClick, parse_mouse_btn(args[0])]]
+    
+    def p_mouse_down(args: list):
+        return [[Commands.MouseDown, parse_mouse_btn(args[0])]]
+    
+    def p_mouse_up(args: list):
+        return [[Commands.MouseUp, parse_mouse_btn(args[0])]]
+    
     l = s.split()
     if len(l) == 0:
         return []
     cmd = l[0].lower()
     args = l[1:]
     cmds = {'delay': [1, p_delay], 
+            'wait-break': [1, p_wait_br], 
             'call': [1, p_call], 
             'wait-btn': [1, p_waitbtn], 
+            'repeat': [1, p_repeat], 
             'press': [-1, lambda x: p_press_release(Commands.Down, x)],
             'release': [-1, lambda x: p_press_release(Commands.Up, x)],
+            'mouse-click': [1, p_mouse_click],
+            'mouse-down': [1, p_mouse_down],
+            'mouse-up': [1, p_mouse_up],
             }
     if cmd in cmds:
         cargs = cmds[cmd][0]

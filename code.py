@@ -1,6 +1,7 @@
 import time
 import usb_hid
 from adafruit_hid.keyboard import Keyboard
+from adafruit_hid.mouse import Mouse
 import board
 import digitalio     
 
@@ -48,11 +49,17 @@ for pin in buttons_pins:
 btn_dbg = setup_input_btn(board.GP15)
 
 keyboard = Keyboard(usb_hid.devices)
+mouse = Mouse(usb_hid.devices)
 
 from parser import parse_macro_dir
 from parser import Commands
 
 trigger_button = None
+
+class FadeTimeout(Exception):
+    pass
+class BreakMacro(Exception):
+    pass
 
 def exec_down(cmd: list):
     time.sleep(0.02)
@@ -68,8 +75,28 @@ def exec_press(cmd: list):
     keyboard.press(cmd[1])
     keyboard.release(cmd[1])
     
+def exec_mouse_click(cmd: list):
+    mouse.click(cmd[1])
+
+def exec_mouse_down(cmd: list):
+    mouse.press(cmd[1])
+    
+def exec_mouse_up(cmd: list):
+    mouse.release(cmd[1])
+    
 def exec_delay(cmd: list):
     time.sleep(cmd[1] / 1000)
+    
+def exec_wait_br(cmd: list):
+    if trigger_button is None:
+        return
+    try:
+        fade(lambda: not trigger_button.value, cmd[1] / 1000)
+        time.sleep(0.5)
+        raise BreakMacro()
+    except FadeTimeout:
+        pass
+    led.value = True
     
 def exec_wait_btn(cmd: list):
     if not trigger_button is None:
@@ -79,8 +106,15 @@ def exec_call(cmd: list):
     if cmd[1] in macros:
         run_macro(macros[cmd[1]])
     
+def exec_repeat(cmd: list):
+    while True:
+        run_macro(macros[cmd[1]])
+    
 def run_macro(commands: list):
-    cmds = {Commands.Down: exec_down, Commands.Up: exec_up, Commands.Press: exec_press, Commands.Delay: exec_delay, Commands.Call: exec_call, Commands.SwitchLang: exec_call, Commands.WaitBtn: exec_wait_btn}
+    cmds = {Commands.Down: exec_down, Commands.Up: exec_up, Commands.Press: exec_press, Commands.Delay: exec_delay, Commands.Call: exec_call, 
+            Commands.SwitchLang: exec_call, Commands.WaitBtn: exec_wait_btn, Commands.MouseClick: exec_mouse_click,
+            Commands.Repeat: exec_repeat, Commands.WaitBreak: exec_wait_br,
+            Commands.MouseDown: exec_mouse_down, Commands.MouseUp: exec_mouse_up}
     for cmd in commands:
         cmds[cmd[0]](cmd)
                         
@@ -99,8 +133,6 @@ def run_macro_for_button(key):
 led.value = False
 blink(0.03, 5)
 
-class FadeTimeout(Exception):
-    pass
 
 def fade(while_f, timeout):
     p_start = 0

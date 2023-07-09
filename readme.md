@@ -84,6 +84,44 @@ Each of line in macro file has structure *'&lt;macro-type&gt;:&lt;macro-data&gt;
     		cmd:release [
     		cmd:release 0xe1
 			
+    * ***repeat*** *&lt;macro_file&gt;* - repeat specified macro file.
+
+        *Examples:*
+
+    		cmd:repeat some.macro
+    		cmd:repeat 1.macro
+    		
+    * ***wait-break*** *&lt;timeout_ms&gt;* - wait for press button that triggered the macro for &lt;timeout_ms&gt; ms. If button is pressed until time is out macro execution will be break.
+
+        *Examples:*
+
+    		cmd:wait-break 5000
+    		cmd:wait-break 1000
+			
+    * ***mouse-down*** *&lt;mouse_button_definition&gt;* - press specified mouse button.
+
+        *Examples:*
+
+    		cmd:mouse-down LEFT
+    		cmd:mouse-down RIGHT
+    		cmd:mouse-down MIDDLE
+    		
+    * ***mouse-up*** *&lt;mouse_button_definition&gt;* - release specified mouse button.
+
+        *Examples:*
+
+    		cmd:mouse-up LEFT
+    		cmd:mouse-up RIGHT
+    		cmd:mouse-up MIDDLE
+			
+    * ***mouse-click*** *&lt;mouse_button_definition&gt;* - press and release (click) specified mouse button.
+
+        *Examples:*
+
+    		cmd:mouse-click LEFT
+    		cmd:mouse-click RIGHT
+    		cmd:mouse-click MIDDLE
+			
 ### Supported key names
 
 | Key Name | Key Scan Code | Description |
