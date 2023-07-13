@@ -2,10 +2,10 @@ import storage
 import board
 import digitalio 
 import time
+import btnopt
 
-btn_dbg_pin = board.GP15
 
-btn_dbg = digitalio.DigitalInOut(btn_dbg_pin)
+btn_dbg = digitalio.DigitalInOut(btnopt.dbg_button_pin)
 btn_dbg.direction = digitalio.Direction.INPUT
 btn_dbg.pull = digitalio.Pull.DOWN
 

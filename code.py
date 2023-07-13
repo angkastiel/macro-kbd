@@ -3,7 +3,8 @@ import usb_hid
 from adafruit_hid.keyboard import Keyboard
 from adafruit_hid.mouse import Mouse
 import board
-import digitalio     
+import digitalio
+import btnopt
 
 led = digitalio.DigitalInOut(board.LED)
 led.direction = digitalio.Direction.OUTPUT    
@@ -39,14 +40,13 @@ def setup_input_btn(pin):
     btn.direction = digitalio.Direction.INPUT
     btn.pull = digitalio.Pull.DOWN
     return btn
-    
-buttons_pins = [board.GP19, board.GP20, board.GP21, board.GP9, board.GP6, board.GP4, board.GP18]
+
 
 buttons = []
-for pin in buttons_pins:
+for pin in btnopt.buttons_pins:
     buttons.append(setup_input_btn(pin))
 
-btn_dbg = setup_input_btn(board.GP15)
+btn_dbg = setup_input_btn(btnopt.dbg_button_pin)
 
 keyboard = Keyboard(usb_hid.devices)
 mouse = Mouse(usb_hid.devices)
