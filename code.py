@@ -5,11 +5,17 @@ from adafruit_hid.mouse import Mouse
 import board
 import digitalio
 import btnopt
+from secure import decrypt_str
+from secure import encrypt_str
+from secure import get_pincode_hash
 
 led = digitalio.DigitalInOut(board.LED)
 led.direction = digitalio.Direction.OUTPUT    
 
 led.value = True
+
+crypotokey = None
+
 
 def blink(delay, count):
     led.value = False
@@ -52,6 +58,7 @@ keyboard = Keyboard(usb_hid.devices)
 mouse = Mouse(usb_hid.devices)
 
 from parser import parse_macro_dir
+from parser import parse_typing
 from parser import Commands
 
 trigger_button = None
@@ -109,12 +116,24 @@ def exec_call(cmd: list):
 def exec_repeat(cmd: list):
     while True:
         run_macro(macros[cmd[1]])
+        
+def exec_decrypt_and_type(cmd: list):
+    s = decrypt_str(cmd[1], crypotokey)
+    macro = parse_typing(s)
+    run_macro(macro)
+    
+def exec_encrypt_and_type(cmd: list):
+    s = encrypt_str(cmd[1], crypotokey)
+    macro = parse_typing(s)
+    run_macro(macro)
     
 def run_macro(commands: list):
     cmds = {Commands.Down: exec_down, Commands.Up: exec_up, Commands.Press: exec_press, Commands.Delay: exec_delay, Commands.Call: exec_call, 
             Commands.SwitchLang: exec_call, Commands.WaitBtn: exec_wait_btn, Commands.MouseClick: exec_mouse_click,
             Commands.Repeat: exec_repeat, Commands.WaitBreak: exec_wait_br,
-            Commands.MouseDown: exec_mouse_down, Commands.MouseUp: exec_mouse_up}
+            Commands.MouseDown: exec_mouse_down, Commands.MouseUp: exec_mouse_up,
+            Commands.DecryptAndType: exec_decrypt_and_type,
+            Commands.EncryptAndType: exec_encrypt_and_type}
     for cmd in commands:
         cmds[cmd[0]](cmd)
                         
