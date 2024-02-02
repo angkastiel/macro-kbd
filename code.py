@@ -5,8 +5,8 @@ from adafruit_hid.mouse import Mouse
 import board
 import digitalio
 import btnopt
-from secure import decrypt_str
-from secure import encrypt_str
+from secure import decode_str
+from secure import encode_str
 from secure import get_pincode_hash
 
 led = digitalio.DigitalInOut(board.LED)
@@ -117,13 +117,13 @@ def exec_repeat(cmd: list):
     while True:
         run_macro(macros[cmd[1]])
         
-def exec_decrypt_and_type(cmd: list):
-    s = decrypt_str(cmd[1], crypotokey)
+def exec_decode_and_type(cmd: list):
+    s = decode_str(cmd[1], crypotokey)
     macro = parse_typing(s)
     run_macro(macro)
     
-def exec_encrypt_and_type(cmd: list):
-    s = encrypt_str(cmd[1], crypotokey)
+def exec_encode_and_type(cmd: list):
+    s = encode_str(cmd[1], crypotokey)
     macro = parse_typing(s)
     run_macro(macro)
     
@@ -132,8 +132,8 @@ def run_macro(commands: list):
             Commands.SwitchLang: exec_call, Commands.WaitBtn: exec_wait_btn, Commands.MouseClick: exec_mouse_click,
             Commands.Repeat: exec_repeat, Commands.WaitBreak: exec_wait_br,
             Commands.MouseDown: exec_mouse_down, Commands.MouseUp: exec_mouse_up,
-            Commands.DecryptAndType: exec_decrypt_and_type,
-            Commands.EncryptAndType: exec_encrypt_and_type}
+            Commands.DecodeAndType: exec_decode_and_type,
+            Commands.EncodeAndType: exec_encode_and_type}
     for cmd in commands:
         cmds[cmd[0]](cmd)
                         
@@ -192,8 +192,8 @@ while True:
             trigger_button = btn
             try:
                 run_macro_for_button(i + 1)
-            except:
-                pass
+            except Exception as e:
+                print(e)
             finally:
                 trigger_button = None
             

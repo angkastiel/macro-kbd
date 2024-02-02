@@ -22,8 +22,8 @@ class Commands:
     MouseDown = 10
     MouseUp = 11
     MouseClick = 12
-    DecryptAndType = 13
-    EncryptAndType = 14
+    DecodeAndType = 13
+    EncodeAndType = 14
     
 
 name2key = {'CTRL': 224, 'SHIFT': 225, 'ALT': 226, 'WIN': 227, 'RCTRL': 228, 'RSHIFT': 229, 'RALT': 230, 'RWIN': 231, 'CAPSLOCK': 57, 'CAPS': 57, 'TAB': 43, 'ESC': 41, 'SPACE': 44, 'ENTER': 40, 'BACKSPACE': 42, 'BKSP': 42, 'INSERT': 73, 'INS': 73, 'DELETE': 76, 'DEL': 76, 'HOME': 74, 'END': 77, 'PAGEDOWN': 78, 'PGDN': 78, 'PAGEUP': 75, 'PGUP': 75, 'RIGHT': 79, 'LEFT': 80, 'DOWN': 81, 'UP': 82, 'F1': 58, 'F2': 59, 'F3': 60, 'F4': 61, 'F5': 62, 'F6': 63, 'F7': 64, 'F8': 65, 'F9': 66, 'F10': 67, 'F11': 68, 'F12': 69, 'SYSRQ': 70, 'PRTSCN': 70, 'SCROLLLOCK': 71, 'SCLK': 71, 'SCRLK': 71, 'BREAK': 72, 'PAUSE': 72, 'NUMLOCK': 83, 'KPSLASH': 84, 'KPASTERISK': 85, 'KPMINUS': 86, 'KPPLUS': 87, 'KPENTER': 88, 'KP1': 89, 'KP2': 90, 'KP3': 91, 'KP4': 92, 'KP5': 93, 'KP6': 94, 'KP7': 95, 'KP8': 96, 'KP9': 97, 'KP0': 98, 'KPDOT': 99, 'COMPOSE': 101, 'CMENU': 101}
@@ -223,14 +223,7 @@ def parse_cmd(s: str):
     
     def p_mouse_up(args: list):
         return [[Commands.MouseUp, parse_mouse_btn(args[0])]]
-    
-    def p_decrypt_and_type(args: list):
-        return [[Commands.DecryptAndType, args[0]]]
-    
-    def p_encrypt_and_type(args: list):
-        return [[Commands.EncryptAndType, args[0]]]
         
-    
     l = s.split()
     if len(l) == 0:
         return []
@@ -245,9 +238,7 @@ def parse_cmd(s: str):
             'release': [-1, lambda x: p_press_release(Commands.Up, x)],
             'mouse-click': [1, p_mouse_click],
             'mouse-down': [1, p_mouse_down],
-            'mouse-up': [1, p_mouse_up],
-            'decrypt-str': [1, p_decrypt_and_type],
-            'encrypt-str': [1, p_encrypt_and_type],
+            'mouse-up': [1, p_mouse_up]
             }
     if cmd in cmds:
         cargs = cmds[cmd][0]
@@ -261,6 +252,19 @@ def parse_cmd(s: str):
         except ValueError as e:
             raise ParserException(str(e))
     raise ParserException(f"Unknown command '{cmd}'")
+
+
+def parse_decode_str(s: str):
+    s = s.strip()
+    for c in s:
+        if not (c in '01234567890aAbBcCdDeEfF'):
+            raise ParserException(f"String must be hex value: '{s}'")
+    return [[Commands.DecodeAndType, s]]
+
+
+def parse_encode_str(s: str):
+    parse_typing(s)
+    return [[Commands.EncodeAndType, s]]
 
 
 def parse_macro_file(filename: str):
@@ -285,7 +289,11 @@ def parse_macro_file(filename: str):
                 raise ParserException("Unknown line format. Correct format: '<macro-type>:<macro>'")  
             mcr = line[0:p].lower()
             mcrdata = line[p + 1:].strip('\r\n')
-            cmds = {'str':parse_typing, 'shortcut':parse_shortcuts, 'cmd':parse_cmd}
+            cmds = {'str':parse_typing,
+                    'shortcut':parse_shortcuts,
+                    'cmd':parse_cmd,
+                    'decode-str': parse_decode_str,
+                    'encode-str': parse_encode_str}
             if mcr in cmds:
                 r = cmds[mcr](mcrdata)
             else:
