@@ -2,11 +2,13 @@ import aesio
 import adafruit_hashlib as hashlib
 from binascii import hexlify
 from binascii import unhexlify
+from binascii import crc32
 import random
+import microcontroller
 
-def get_pincode_hash(s: bytes):
+def get_data_hash(data: bytes):
     h = hashlib.sha256()
-    h.update(s)
+    h.update(data)
     return h.digest()
     
 def encrypt(data: bytes, key: bytes):
@@ -39,16 +41,35 @@ def unpad_data(data: bytes):
     l = data[-1] & 0x0f
     return data[0:-(l+1)]
     
+def calc_key_signature(key: bytes, salt: bytes):
+    return encrypt(crc32(key + salt).to_bytes(4, 'big'), get_data_hash(key))
+    
 def encode_data(data: bytes, key: bytes):
-    return encrypt(pad_data(data), key)
+    enc_data = encrypt(pad_data(data), key)
+    key_signature = calc_key_signature(key, enc_data[-4:])
+    return key_signature + enc_data
     
 def decode_data(data: bytes, key: bytes):
-    return unpad_data(decrypt(data, key))
+    return unpad_data(decrypt(data[4:], key))
 
 def encode_str(s: str, key: bytes):
-    data = bytes(s, "UTF-8")
-    return hexlify(encode_data(data, key)).decode("UTF-8")
+    data = bytes(s, 'utf-8')
+    return hexlify(encode_data(data, key)).decode('ascii')
 
 def decode_str(s_hex: str, key: bytes):
     data = decode_data(unhexlify(s_hex), key)
-    return data.decode("UTF-8")
+    return data.decode('ascii')
+
+def str_can_be_decoded(s_hex: str, key: bytes):
+    stored_key_signature = unhexlify(s_hex[0:8])
+    salt = unhexlify(s_hex[-8:])
+    key_signature = calc_key_signature(key, salt)
+    return stored_key_signature == key_signature
+
+keys = [get_data_hash(microcontroller.cpu.uid)]
+
+def decode_str_use_keys(s_hex: str):
+    for k in keys:
+        if str_can_be_decoded(s_hex, k):
+            return decode_str(s_hex, k)
+    raise Exception("Has no key to decode string")
