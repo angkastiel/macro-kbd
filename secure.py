@@ -41,16 +41,31 @@ def unpad_data(data: bytes):
     l = data[-1] & 0x0f
     return data[0:-(l+1)]
     
+def randomize_data_bytes(data: bytes):
+    x = random_byte()
+    r = bytearray(len(data) + 1)
+    r[0] = x
+    for i, b in enumerate(data):
+        r[i + 1] = b ^ x
+    return r
+
+def unrandomize_data_bytes(data: bytes):
+    x = data[0]
+    r = data[1:]
+    for i in range(len(r)):
+        r[i] = r[i] ^ x
+    return r
+        
 def calc_key_signature(key: bytes, salt: bytes):
     return encrypt(crc32(key + salt).to_bytes(4, 'big'), get_data_hash(key))
     
-def encode_data(data: bytes, key: bytes):
-    enc_data = encrypt(pad_data(data), key)
+def encode_data(data: bytes, key: bytes):   
+    enc_data = encrypt(pad_data(randomize_data_bytes(data)), key)
     key_signature = calc_key_signature(key, enc_data[-4:])
     return key_signature + enc_data
     
 def decode_data(data: bytes, key: bytes):
-    return unpad_data(decrypt(data[4:], key))
+    return unrandomize_data_bytes(unpad_data(decrypt(data[4:], key)))
 
 def encode_str(s: str, key: bytes):
     data = bytes(s, 'utf-8')
@@ -66,10 +81,36 @@ def str_can_be_decoded(s_hex: str, key: bytes):
     key_signature = calc_key_signature(key, salt)
     return stored_key_signature == key_signature
 
-keys = [get_data_hash(microcontroller.cpu.uid)]
+class KeysStorage:
+    _keys = None
+    
+    def __init__(self):
+        self._keys = []
+    
+    def add_key(self, key: CryptoKey):
+        self._keys.append(key)
+        
+    def add_default_key(self):
+        k = CryptoKey(get_data_hash(microcontroller.cpu.uid), "Static hardware key", SecurityLevel.Unsecure)
+        self.add_key(k)
+        
+    def decode_str(self, s_hex: str):
+        for k in self._keys:
+            if str_can_be_decoded(s_hex, k.Key):
+                return decode_str(s_hex, k.Key)
+        raise Exception("Has no key to decode string")
 
-def decode_str_use_keys(s_hex: str):
-    for k in keys:
-        if str_can_be_decoded(s_hex, k):
-            return decode_str(s_hex, k)
-    raise Exception("Has no key to decode string")
+class CryptoKey:
+    Key = None
+    Description = None
+    SecurityLevel = None
+    
+    def __init__(self, key: bytes, description: str, security_level: int):
+        self.Key = key
+        self.Description = description
+        self.SecurityLevel = security_level
+        
+class SecurityLevel:
+    Unsecure = 0
+    Low = 1
+    Normal = 2
