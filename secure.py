@@ -99,6 +99,9 @@ class KeysStorage:
             if str_can_be_decoded(s_hex, k.Key):
                 return decode_str(s_hex, k.Key)
         raise Exception("Has no key to decode string")
+        
+    def __iter__(self):
+        return iter(self._keys)
 
 class CryptoKey:
     Key = None
@@ -114,3 +117,8 @@ class SecurityLevel:
     Unsecure = 0
     Low = 1
     Normal = 2
+    
+    @staticmethod
+    def to_string(v: int):
+        a = ['Unsecure', 'Low', 'Normal']
+        return a[v]

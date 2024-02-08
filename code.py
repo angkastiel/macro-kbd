@@ -5,16 +5,18 @@ from adafruit_hid.mouse import Mouse
 import board
 import digitalio
 import btnopt
-from secure import decode_str
+from secure import KeysStorage
+from secure import CryptoKey
 from secure import encode_str
-from secure import get_pincode_hash
+from secure import SecurityLevel
 
 led = digitalio.DigitalInOut(board.LED)
 led.direction = digitalio.Direction.OUTPUT    
 
 led.value = True
 
-crypotokey = None
+crypotokeys = KeysStorage()
+crypotokeys.add_default_key()
 
 
 def blink(delay, count):
@@ -59,6 +61,7 @@ mouse = Mouse(usb_hid.devices)
 
 from parser import parse_macro_dir
 from parser import parse_typing
+from parser import parse_key
 from parser import Commands
 
 trigger_button = None
@@ -118,14 +121,17 @@ def exec_repeat(cmd: list):
         run_macro(macros[cmd[1]])
         
 def exec_decode_and_type(cmd: list):
-    s = decode_str(cmd[1], crypotokey)
+    s = crypotokeys.decode_str(cmd[1])
     macro = parse_typing(s)
     run_macro(macro)
     
 def exec_encode_and_type(cmd: list):
-    s = encode_str(cmd[1], crypotokey)
-    macro = parse_typing(s)
-    run_macro(macro)
+    raw_str = cmd[1]
+    for k in crypotokeys:
+        s = encode_str(raw_str, k.Key)
+        macro = parse_typing(f"Encoded: '{s}', {k.Description}, security:{SecurityLevel.to_string(k.SecurityLevel)}")
+        run_macro(macro)
+        run_macro([[Commands.Press, parse_key('ENTER')]])
     
 def run_macro(commands: list):
     cmds = {Commands.Down: exec_down, Commands.Up: exec_up, Commands.Press: exec_press, Commands.Delay: exec_delay, Commands.Call: exec_call, 
