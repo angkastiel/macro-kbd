@@ -94,6 +94,10 @@ class KeysStorage:
         k = CryptoKey(get_data_hash(microcontroller.cpu.uid), "Static hardware key", SecurityLevel.Unsecure)
         self.add_key(k)
         
+    def add_pincode(self, pincode: bytes):
+        k = CryptoKey(get_data_hash(microcontroller.cpu.uid + pincode), "Pincode", SecurityLevel.Low)
+        self.add_key(k)
+
     def decode_str(self, s_hex: str):
         for k in self._keys:
             if str_can_be_decoded(s_hex, k.Key):

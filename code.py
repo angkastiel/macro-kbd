@@ -9,6 +9,9 @@ from secure import KeysStorage
 from secure import CryptoKey
 from secure import encode_str
 from secure import SecurityLevel
+from buttons import Buttons
+from pincode import PincodeInput
+import traceback
 
 led = digitalio.DigitalInOut(board.LED)
 led.direction = digitalio.Direction.OUTPUT    
@@ -17,7 +20,6 @@ led.value = True
 
 crypotokeys = KeysStorage()
 crypotokeys.add_default_key()
-
 
 def blink(delay, count):
     led.value = False
@@ -43,18 +45,14 @@ def macro_end():
     led.value = False
     time.sleep(0.02)
     
-def setup_input_btn(pin):
-    btn = digitalio.DigitalInOut(pin)
-    btn.direction = digitalio.Direction.INPUT
-    btn.pull = digitalio.Pull.DOWN
-    return btn
-
-
-buttons = []
-for pin in btnopt.buttons_pins:
-    buttons.append(setup_input_btn(pin))
-
-btn_dbg = setup_input_btn(btnopt.dbg_button_pin)
+def blink_inverted(delay: float):
+    led.value = False
+    time.sleep(delay)
+    led.value = True
+    
+buttons = Buttons()
+trigger_button_id = None
+pin_input = PincodeInput(buttons)
 
 keyboard = Keyboard(usb_hid.devices)
 mouse = Mouse(usb_hid.devices)
@@ -63,8 +61,6 @@ from parser import parse_macro_dir
 from parser import parse_typing
 from parser import parse_key
 from parser import Commands
-
-trigger_button = None
 
 class FadeTimeout(Exception):
     pass
@@ -98,10 +94,10 @@ def exec_delay(cmd: list):
     time.sleep(cmd[1] / 1000)
     
 def exec_wait_br(cmd: list):
-    if trigger_button is None:
+    if trigger_button_id is None:
         return
     try:
-        fade(lambda: not trigger_button.value, cmd[1] / 1000)
+        fade(lambda: not buttons.is_pressed(trigger_button_id), cmd[1] / 1000)
         time.sleep(0.5)
         raise BreakMacro()
     except FadeTimeout:
@@ -109,8 +105,8 @@ def exec_wait_br(cmd: list):
     led.value = True
     
 def exec_wait_btn(cmd: list):
-    if not trigger_button is None:
-        fade(lambda: not trigger_button.value, cmd[1] / 1000)
+    if not trigger_button_id is None:
+        fade(lambda: not buttons.is_pressed(trigger_button_id), cmd[1] / 1000)
     
 def exec_call(cmd: list):
     if cmd[1] in macros:
@@ -189,19 +185,32 @@ def fade(while_f, timeout):
             led.value = False
             time.sleep(y * 0.0001)
 
-
+time_boot = time.monotonic()
+print(time_boot)
 while True:
-    led.value = bool(btn_dbg.value)
+    led.value = buttons.is_pressed(buttons.DebugButton)
+
+    btn_id = buttons.wait_pressed(1.0, 0.1)
+    if btn_id == -1:
+        continue
     
-    for i, btn in enumerate(buttons):
-        if btn.value:
-            trigger_button = btn
-            try:
-                run_macro_for_button(i + 1)
-            except Exception as e:
-                print(e)
-            finally:
-                trigger_button = None
-            
+    led.value = btn_id == buttons.DebugButton
+    if (btn_id == buttons.DebugButton) and (time.monotonic() - time_boot >= 1.0) and buttons.wait_hold(btn_id, 1.0):
+        blink_inverted(0.5)
+        code = pin_input.enter_pin(lambda: blink_inverted(0.2))
+        led.value = False
+        if len(code) > 0:
+            crypotokeys.add_pincode(code)
+        time.sleep(0.5)
+        continue
+        
+    if btn_id in buttons.TriggerButtons:
+        trigger_button_id = btn_id
+        try:
+            run_macro_for_button(btn_id + 1)
+        except Exception as e:
+            print(traceback.format_exception(etype=type(e), value=e, tb=e.__traceback__))
+        finally:
+            trigger_button_id = None
     time.sleep(0.1)
 
